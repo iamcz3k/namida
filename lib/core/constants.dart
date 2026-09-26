@@ -834,13 +834,13 @@ class AppSocial {
   static const DONATE_KOFI = 'https://ko-fi.com/namidaco';
   static const DONATE_BUY_ME_A_COFFEE = 'https://www.buymeacoffee.com/namidaco';
   static const DONATE_PATREON = 'https://www.patreon.com/namidaco';
-  static const GITHUB = 'https://github.com/namidaco/namida';
-  static const GITHUB_SNAPSHOTS = 'https://github.com/namidaco/namida-snapshots';
+  static const GITHUB = 'https://github.com/iamcz3k/namida';
+  static const GITHUB_SNAPSHOTS = 'https://github.com/iamcz3k/namida/releases';
   static const GITHUB_ISSUES = '$GITHUB/issues';
   static const GITHUB_RELEASES = '$GITHUB/releases/';
   static const GITHUB_RELEASES_BETA = '$GITHUB_SNAPSHOTS/releases/';
-  static const EMAIL = 'namida.coo@gmail.com';
-  static const TRANSLATION_REPO = 'https://github.com/namidaco/namida-translations';
+  static const EMAIL = 'laczek.player@proton.me';
+  static const TRANSLATION_REPO = 'https://github.com/iamcz3k/namida';
 
   static const NAMIDA_SYNC_GITHUB_RELEASE = 'https://github.com/010101-sans/namida_sync/releases';
 }
