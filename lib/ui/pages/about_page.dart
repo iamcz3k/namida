@@ -409,7 +409,7 @@ class _AboutPageState extends State<AboutPage> {
                         try {
                           final mailOptions = MailOptions(
                             body: 'pls look at this report im beggin u pls solve my issue pls i wa-',
-                            subject: 'Namida Logs Report',
+                            subject: 'LACZEK Player Logs Report',
                             recipients: [AppSocial.EMAIL],
                             attachments: attachments,
                           );
