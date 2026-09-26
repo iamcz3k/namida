@@ -23,9 +23,9 @@
      </intent>
      </queries>
     <application
-        android:label="Namida"
+        android:label="LACZEK Player"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/laczek_logo"
         android:appCategory="audio"
         android:requestLegacyExternalStorage="true"
         android:supportsPictureInPicture="true"
@@ -40,8 +40,8 @@
             android:enabled="true"
             android:name="com.msob7y.namida.DefaultIcon"
             android:targetActivity=".NamidaMainActivity"
-            android:icon="@mipmap/ic_launcher"
-            android:roundIcon="@mipmap/ic_launcher"
+            android:icon="@drawable/laczek_logo"
+            android:roundIcon="@drawable/laczek_logo"
             android:exported="true">
 
             <intent-filter>
@@ -281,8 +281,8 @@
             android:enabled="false"
             android:name="com.msob7y.namida.ShadeIcon"
             android:targetActivity=".NamidaMainActivity"
-            android:icon="@mipmap/ic_launcher"
-            android:roundIcon="@mipmap/ic_launcher"
+            android:icon="@drawable/laczek_logo"
+            android:roundIcon="@drawable/laczek_logo"
             android:exported="true">
 
             <intent-filter>
@@ -296,8 +296,8 @@
             android:enabled="false"
             android:name="com.msob7y.namida.MiniIcon"
             android:targetActivity=".NamidaMainActivity"
-            android:icon="@mipmap/ic_launcher"
-            android:roundIcon="@mipmap/ic_launcher"
+            android:icon="@drawable/laczek_logo"
+            android:roundIcon="@drawable/laczek_logo"
             android:exported="true">
 
             <intent-filter>
@@ -426,7 +426,7 @@
         <service
             android:name="NamidaQuickSettingsTile"
             android:exported="true"
-            android:label="Namida" 
+            android:label="LACZEK Player" 
             android:icon="@drawable/ic_stat_musicnote"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <meta-data android:name="android.service.quicksettings.TOGGLEABLE_TILE"
