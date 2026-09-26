@@ -1,5 +1,5 @@
 name: namida
-description: A Beautiful and Feature-rich Music Player, With YouTube & Video Support Built in Flutter
+description: LACZEK Player - Music, Video & YouTube Player built in Flutter
 publish_to: "none"
 version: 6.3.1-beta+260625092
 
@@ -269,8 +269,8 @@ flutter:
         - asset: assets/fonts/LexendDeca/LexendDeca-Thin.ttf
 
 msix_config:
-  display_name: Namida
-  publisher_display_name: namidaco
+  display_name: LACZEK Player
+  publisher_display_name: LaCzek
   identity_name: com.msob7y.namida
   logo_path: assets\namida_icon_monet.png
   capabilities: musicLibrary, videosLibrary, internetClient
