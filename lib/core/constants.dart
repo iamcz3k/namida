@@ -839,7 +839,7 @@ class AppSocial {
   static const GITHUB_ISSUES = '$GITHUB/issues';
   static const GITHUB_RELEASES = '$GITHUB/releases/';
   static const GITHUB_RELEASES_BETA = '$GITHUB_SNAPSHOTS/releases/';
-  static const EMAIL = 'laczek.player@proton.me';
+  static const EMAIL = 'namida.coo@gmail.com';
   static const TRANSLATION_REPO = 'https://github.com/iamcz3k/namida';
 
   static const NAMIDA_SYNC_GITHUB_RELEASE = 'https://github.com/010101-sans/namida_sync/releases';
