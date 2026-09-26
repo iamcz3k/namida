@@ -67,10 +67,17 @@ dependencies:
   native_device_orientation: ^2.1.1
   home_widget: ^0.9.2
   flutter_local_notifications: ^22.0.0-dev.3
+  flutter_sharing_intent: ^2.0.4
   queue: ^3.1.0+2
   jiffy:
     git:
       url: https://github.com/MSOB7YY/jiffy
+  playlist_manager:
+    git:
+      url: https://github.com/namidaco/playlist_manager
+  history_manager:
+    git:
+      url: https://github.com/namidaco/history_manager
   flutter_volume_controller: ^2.0.1
   flutter_markdown: ^0.7.7
   flutter_mailer: ^3.0.2
@@ -97,6 +104,9 @@ dependencies:
       url: https://github.com/MSOB7YY/smb_connect
 
   # ---- Audio Indexing & Playback ----
+  basic_audio_handler:
+    git:
+      url: https://github.com/namidaco/basic_audio_handler
   just_audio:
     git:
       url: https://github.com/MSOB7YY/just_audio
@@ -120,6 +130,15 @@ dependencies:
       path: packages/on_audio_query
 
   # ---- Video Indexing & Playback ----
+  youtipie:
+    git:
+      url: https://github.com/namidaco/youtipie
+  namico_login_manager:
+    git:
+      url: https://github.com/namidaco/namico_login_manager
+  namico_subscription_manager:
+    git:
+      url: https://github.com/namidaco/namico_subscription_manager
   ffmpeg_kit_flutter:
     git:
       url: https://github.com/MSOB7YY/ffmpeg-kit
