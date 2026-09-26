@@ -29,7 +29,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y apktool
-          sdkmanager --install "build-tools;35.0.0"
 
       - name: Read version
         id: version
@@ -80,7 +79,8 @@ jobs:
 
             apktool b "work/$ABI" -o "work/$ABI-unsigned.apk"
 
-            BUILD_TOOLS="$ANDROID_HOME/build-tools/35.0.0"
+            BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+            test -n "$BUILD_TOOLS"
             "$BUILD_TOOLS/zipalign" -f -p 4 "work/$ABI-unsigned.apk" "work/$ABI-aligned.apk"
             "$BUILD_TOOLS/apksigner" sign \
               --ks release-key.jks \
