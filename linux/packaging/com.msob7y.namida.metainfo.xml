@@ -2,8 +2,8 @@
 <component type="desktop-application">
   <id>com.msob7y.namida</id>
   
-  <name>Namida</name>
-  <summary>A Beautiful and Feature-rich Music Player, With YouTube &amp; Video Support Built in Flutter</summary>
+  <name>LACZEK Player</name>
+  <summary>LACZEK Player - Music, Video &amp; YouTube Player built in Flutter</summary>
   
   <metadata_license>FTL</metadata_license>
   <project_license>EULA</project_license>
@@ -16,7 +16,7 @@
   
   <description>
     <p>
-      A Beautiful and Feature-rich Music Player, With YouTube &amp; Video Support Built in Flutter
+      LACZEK Player - Music, Video &amp; YouTube Player built in Flutter
     </p>
   </description>
   
