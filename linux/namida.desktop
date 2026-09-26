@@ -1,8 +1,8 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=Namida
-Comment=Media Player
+Name=LACZEK Player
+Comment=LACZEK Player - Music & Video Player
 TryExec=namida
 Exec=namida %F
 Icon=namida
