@@ -44,8 +44,7 @@ jobs:
           curl -fL --retry 5 --retry-all-errors -o upstream/armv7.apk "https://github.com/namidaco/namida-snapshots/releases/download/6.3.1-beta%2B260625092/namida-v6.3.1-beta-armeabi-v7a.apk"
 
       - name: Create signing key
-        run: |
-          keytool -genkeypair -v             -keystore release-key.jks             -storepass laczekplayer             -keypass laczekplayer             -alias laczek             -keyalg RSA             -keysize 2048             -validity 10000             -dname "CN=LaCzek, OU=LACZEK Player, O=LACZEK, L=Kampala, ST=Central, C=UG"
+        run: keytool -genkeypair -v -keystore release-key.jks -storepass laczekplayer -keypass laczekplayer -alias laczek -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=LaCzek, OU=LACZEK Player, O=LACZEK, L=Kampala, ST=Central, C=UG"
 
       - name: Rebrand Flutter APK contents
         shell: bash
@@ -55,49 +54,15 @@ jobs:
           for ABI in arm64 armv7; do
             rm -rf "work/$ABI"
             apktool d --no-src --force-all -f "upstream/$ABI.apk" -o "work/$ABI"
-
-            python3 - "work/$ABI" <<'PY'
-import os, sys
-root=sys.argv[1]
-replacements=0
-for base, _, files in os.walk(root):
-    for name in files:
-        path=os.path.join(base,name)
-        try:
-            data=open(path,'rb').read()
-        except Exception:
-            continue
-        if b'Namida' in data:
-            replacements += data.count(b'Namida')
-            data=data.replace(b'Namida',b'LACZEK')
-        if b'NAMIDA' in data:
-            replacements += data.count(b'NAMIDA')
-            data=data.replace(b'NAMIDA',b'LACZEK')
-        open(path,'wb').write(data)
-print("Flutter branding replacements:", replacements)
-PY
-
+            find "work/$ABI" -type f -name 'libapp.so' -exec sed -i 's/Namida/LACZEK/g; s/NAMIDA/LACZEK/g' {} +
+            find "work/$ABI" -type f -name '*.xml' -exec sed -i 's/>Namida</>LACZEK Player</g; s/android:label="Namida"/android:label="LACZEK Player"/g' {} +
             mkdir -p "work/$ABI/res/drawable"
-            cat > "work/$ABI/res/drawable/laczek_logo.xml" <<'XML'
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path android:fillColor="#FF8A3D" android:pathData="M0,0h108v108H0z" />
-    <path android:fillColor="#0F0F12" android:pathData="M24,20h14v48h32v14H24z" />
-    <path android:fillColor="#0F0F12" android:pathData="M57,29l29,25 -29,25z" />
-</vector>
-XML
-
-            sed -i 's/android:label="Namida"/android:label="LACZEK Player"/g' "work/$ABI/AndroidManifest.xml"
-            sed -i 's#android:icon="@mipmap/[^"]*"#android:icon="@drawable/laczek_logo"#g' "work/$ABI/AndroidManifest.xml"
-            sed -i 's#android:roundIcon="@mipmap/[^"]*"#android:roundIcon="@drawable/laczek_logo"#g' "work/$ABI/AndroidManifest.xml"
-
+            printf '%s\n' '<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108"><path android:fillColor="#FF8A3D" android:pathData="M0,0h108v108H0z"/><path android:fillColor="#0F0F12" android:pathData="M24,20h14v48h32v14H24z"/><path android:fillColor="#0F0F12" android:pathData="M57,29l29,25 -29,25z"/></vector>' > "work/$ABI/res/drawable/laczek_logo.xml"
+            sed -i 's#android:icon="@mipmap/[^"]*"#android:icon="@drawable/laczek_logo"#g; s#android:roundIcon="@mipmap/[^"]*"#android:roundIcon="@drawable/laczek_logo"#g' "work/$ABI/AndroidManifest.xml"
             apktool b "work/$ABI" -o "work/$ABI-unsigned.apk"
             BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
-            "$BUILD_TOOLS/zipalign" -P 16 -f -v 4 "work/$ABI-unsigned.apk" "work/$ABI-aligned.apk"
-            "$BUILD_TOOLS/apksigner" sign               --ks release-key.jks               --ks-pass pass:laczekplayer               --key-pass pass:laczekplayer               --ks-key-alias laczek               --out "release/LACZEK-Player-v${{ steps.version.outputs.version_name }}-${ABI}.apk"               "work/$ABI-aligned.apk"
+            "$BUILD_TOOLS/zipalign" -P 16 -f 4 "work/$ABI-unsigned.apk" "work/$ABI-aligned.apk"
+            "$BUILD_TOOLS/apksigner" sign --ks release-key.jks --ks-pass pass:laczekplayer --key-pass pass:laczekplayer --ks-key-alias laczek --out "release/LACZEK-Player-v${{ steps.version.outputs.version_name }}-${ABI}.apk" "work/$ABI-aligned.apk"
             "$BUILD_TOOLS/apksigner" verify --verbose "release/LACZEK-Player-v${{ steps.version.outputs.version_name }}-${ABI}.apk"
           done
           ls -lh release
