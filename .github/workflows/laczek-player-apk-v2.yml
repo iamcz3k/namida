@@ -1,0 +1,95 @@
+name: LACZEK Player APK Release V2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: false
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install APK tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apktool
+
+      - name: Read version
+        id: version
+        run: |
+          VERSION=$(awk '/^version:/ {print $2; exit}' pubspec.yaml)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version_name=${VERSION%%+*}" >> "$GITHUB_OUTPUT"
+
+      - name: Download exact upstream Android binaries
+        run: |
+          set -e
+          mkdir -p upstream
+          curl -fL --retry 5 --retry-all-errors -o upstream/arm64.apk "https://github.com/namidaco/namida-snapshots/releases/download/6.3.1-beta%2B260625092/namida-v6.3.1-beta-arm64-v8a.apk"
+          curl -fL --retry 5 --retry-all-errors -o upstream/armv7.apk "https://github.com/namidaco/namida-snapshots/releases/download/6.3.1-beta%2B260625092/namida-v6.3.1-beta-armeabi-v7a.apk"
+          test -s upstream/arm64.apk
+          test -s upstream/armv7.apk
+
+      - name: Create signing key
+        run: |
+          keytool -genkeypair -v \
+            -keystore release-key.jks \
+            -storepass laczekplayer \
+            -keypass laczekplayer \
+            -alias laczek \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=LaCzek, OU=LACZEK Player, O=LACZEK, L=Kampala, ST=Central, C=UG"
+
+      - name: Rebrand and sign APKs
+        shell: bash
+        run: |
+          set -e
+          mkdir -p release work
+          BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          test -n "$BUILD_TOOLS"
+
+          for ABI in arm64 armv7; do
+            rm -rf "work/$ABI"
+            apktool d -r --no-src --force-all -f "upstream/$ABI.apk" -o "work/$ABI"
+            sed -i 's/android:label="Namida"/android:label="LACZEK Player"/g' "work/$ABI/AndroidManifest.xml"
+            apktool b "work/$ABI" -o "work/$ABI-unsigned.apk"
+            "$BUILD_TOOLS/zipalign" -f -p 4 "work/$ABI-unsigned.apk" "work/$ABI-aligned.apk"
+            "$BUILD_TOOLS/apksigner" sign \
+              --ks release-key.jks \
+              --ks-pass pass:laczekplayer \
+              --key-pass pass:laczekplayer \
+              --ks-key-alias laczek \
+              --out "release/LACZEK-Player-v${{ steps.version.outputs.version_name }}-${ABI}.apk" \
+              "work/$ABI-aligned.apk"
+            "$BUILD_TOOLS/apksigner" verify --verbose "release/LACZEK-Player-v${{ steps.version.outputs.version_name }}-${ABI}.apk"
+          done
+          ls -lh release
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: LACZEK Player ${{ steps.version.outputs.version_name }}
+          make_latest: true
+          prerelease: ${{ contains(steps.version.outputs.version, '-beta') }}
+          generate_release_notes: true
+          body: |
+            LACZEK Player Android APKs.
+          files: release/*.apk
