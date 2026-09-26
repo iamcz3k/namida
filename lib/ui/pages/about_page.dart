@@ -150,8 +150,8 @@ class _AboutPageState extends State<AboutPage> {
                             ),
                           ),
                           title: lang.developer,
-                          subtitle: 'MSOB7YY',
-                          link: 'https://github.com/MSOB7YY',
+                          subtitle: 'LaCzek',
+                          link: 'https://github.com/iamcz3k',
                         ),
                       ),
                     ],
@@ -183,7 +183,7 @@ class _AboutPageState extends State<AboutPage> {
                         ),
                         const SizedBox(height: 4.0),
                         Text(
-                          "Namida",
+                          "LACZEK Player",
                           style: textTheme.displayLarge,
                         ),
                         if (currentVersionText != '')
@@ -226,7 +226,7 @@ class _AboutPageState extends State<AboutPage> {
                   const NamidaAboutListTile(
                     icon: Broken.send_2,
                     title: 'Telegram',
-                    link: 'https://t.me/namida_official',
+                    link: 'https://github.com/iamcz3k/namida',
                   ),
                   NamidaAboutListTile(
                     leading: Image.asset(
@@ -269,7 +269,7 @@ class _AboutPageState extends State<AboutPage> {
                       trailing: isLoading ? const LoadingIndicator() : null,
                       onTap: () async {
                         _loadingChangelog.value = true;
-                        final stringy = await Rhttp.get('https://raw.githubusercontent.com/namidaco/namida/main/CHANGELOG.md');
+                        final stringy = await Rhttp.get('https://raw.githubusercontent.com/iamcz3k/namida/main/CHANGELOG.md');
                         _loadingChangelog.value = false;
                         NamidaNavigator.inst.showSheet(
                           showDragHandle: true,
