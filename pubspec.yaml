@@ -229,7 +229,6 @@ hooks:
       source: sqlite3mc
 
 flutter_native_splash:
-  image: assets/namida_icon.png
   color: "#fff5eb"
   color_dark: "#161212"
   android: true
