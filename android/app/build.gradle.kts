@@ -78,7 +78,7 @@ android {
         outputs.all {
             val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
             val abiText = output.filters.find { it.filterType == "ABI" }?.identifier?.let { "-$it" } ?: ""
-            output.outputFileName = "namida-v${versionName}${abiText}.apk"
+            output.outputFileName = "laczek-player-v${versionName}${abiText}.apk"
         }
     }
 
