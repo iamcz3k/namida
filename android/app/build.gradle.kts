@@ -83,12 +83,7 @@ android {
     }
 
     signingConfigs {
-        getByName("debug") {
-            keyAlias = keystoreProperties["keyAlias"] as? String
-            keyPassword = keystoreProperties["keyPassword"] as? String
-            storeFile = (keystoreProperties["storeFile"] as? String)?.let { file(it) }
-            storePassword = keystoreProperties["storePassword"] as? String
-        }
+        getByName("debug") {}
 
         register("release") {
             keyAlias = keystoreProperties["keyAlias"] as? String
@@ -117,7 +112,7 @@ android {
         // }
 
         named("release") {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.getByName("debug")
             isShrinkResources = false
             isMinifyEnabled = true
             setProguardFiles(listOf(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"))
