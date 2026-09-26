@@ -1,4 +1,4 @@
-name: LACZEK Player APK Release V2
+name: LACZEK Player Flutter APK
 
 on:
   push:
@@ -16,7 +16,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-          submodules: false
+          submodules: recursive
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.1'
+          channel: stable
+          cache: true
 
       - name: Setup Java 17
         uses: actions/setup-java@v4
@@ -24,10 +31,20 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Install APK tools
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Flutter APK
+        run: flutter build apk --release
+
+      - name: Verify APK
         run: |
-          sudo apt-get update
-          sudo apt-get install -y apktool
+          set -e
+          find build/app/outputs/flutter-apk -maxdepth 1 -type f -name '*.apk' -print
+          test -n "$(find build/app/outputs/flutter-apk -maxdepth 1 -type f -name '*.apk' -print -quit)"
 
       - name: Read version
         id: version
@@ -36,60 +53,22 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "version_name=${VERSION%%+*}" >> "$GITHUB_OUTPUT"
 
-      - name: Download exact upstream Android binaries
+      - name: Prepare release
         run: |
           set -e
-          mkdir -p upstream
-          curl -fL --retry 5 --retry-all-errors -o upstream/arm64.apk "https://github.com/namidaco/namida-snapshots/releases/download/6.3.1-beta%2B260625092/namida-v6.3.1-beta-arm64-v8a.apk"
-          curl -fL --retry 5 --retry-all-errors -o upstream/armv7.apk "https://github.com/namidaco/namida-snapshots/releases/download/6.3.1-beta%2B260625092/namida-v6.3.1-beta-armeabi-v7a.apk"
-          test -s upstream/arm64.apk
-          test -s upstream/armv7.apk
-
-      - name: Create signing key
-        run: |
-          keytool -genkeypair -v \
-            -keystore release-key.jks \
-            -storepass laczekplayer \
-            -keypass laczekplayer \
-            -alias laczek \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=LaCzek, OU=LACZEK Player, O=LACZEK, L=Kampala, ST=Central, C=UG"
-
-      - name: Rebrand and sign APKs
-        shell: bash
-        run: |
-          set -e
-          mkdir -p release work
-          BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
-          test -n "$BUILD_TOOLS"
-
-          for ABI in arm64 armv7; do
-            rm -rf "work/$ABI"
-            apktool d -r --no-src --force-all -f "upstream/$ABI.apk" -o "work/$ABI"
-            sed -i 's/android:label="Namida"/android:label="LACZEK Player"/g' "work/$ABI/AndroidManifest.xml"
-            apktool b "work/$ABI" -o "work/$ABI-unsigned.apk"
-            "$BUILD_TOOLS/zipalign" -f -p 4 "work/$ABI-unsigned.apk" "work/$ABI-aligned.apk"
-            "$BUILD_TOOLS/apksigner" sign \
-              --ks release-key.jks \
-              --ks-pass pass:laczekplayer \
-              --key-pass pass:laczekplayer \
-              --ks-key-alias laczek \
-              --out "release/LACZEK-Player-v${{ steps.version.outputs.version_name }}-${ABI}.apk" \
-              "work/$ABI-aligned.apk"
-            "$BUILD_TOOLS/apksigner" verify --verbose "release/LACZEK-Player-v${{ steps.version.outputs.version_name }}-${ABI}.apk"
-          done
+          mkdir -p release
+          find build/app/outputs/flutter-apk -maxdepth 1 -type f -name '*.apk' -print0 |
+            while IFS= read -r -d '' apk; do
+              cp "$apk" "release/LACZEK-Player-$(basename "$apk")"
+            done
           ls -lh release
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: LACZEK Player ${{ steps.version.outputs.version_name }}
+          tag_name: v${{ steps.version.outputs.version }}-flutter
+          name: LACZEK Player ${{ steps.version.outputs.version_name }} Flutter build
           make_latest: true
-          prerelease: ${{ contains(steps.version.outputs.version, '-beta') }}
+          prerelease: true
           generate_release_notes: true
-          body: |
-            LACZEK Player Android APKs.
           files: release/*.apk
