@@ -32,6 +32,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Configure Git access for dependencies
+        run: |
+          git config --global url.https://${{ secrets.PAT_ORG }}@github.com/namidaco/.insteadOf https://github.com/namidaco/
+          git config --global url.https://${{ secrets.PAT }}@github.com/MSOB7YY/.insteadOf https://github.com/MSOB7YY/
+
       - name: Install dependencies
         run: flutter pub get
 
