@@ -33,6 +33,8 @@ jobs:
           LACZEK_SOURCE: \${{ github.workspace }}/build-src
         run: python3 config/scripts/rebrand_laczek.py
 
+      - name: Reuse checkout Git credentials for dependencies
+        run: git -C config config --get-all http.https://github.com/.extraheader | while IFS= read -r h; do git config --global --add http.https://github.com/.extraheader "$h"; done
       - name: Fetch dependencies
         working-directory: build-src
         run: flutter pub get
