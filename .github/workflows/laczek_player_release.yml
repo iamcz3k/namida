@@ -1,6 +1,5 @@
 name: LACZEK Player Release
 
-
 on:
   workflow_dispatch:
   push:
@@ -14,61 +13,74 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone clean upstream Namida source
-        run: git clone --depth 1 https://github.com/namidaco/namida.git build-src
+        run: git clone --depth 1 https://github.com/namidaco/namida.git upstream-source
 
-      - name: Checkout this repo
+      - name: Checkout LACZEK configuration
         uses: actions/checkout@v4
         with:
           path: config
 
-      - name: Install Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.44.8'
-          channel: stable
-          cache: true
-
-      - name: Apply LACZEK Player rebrand
-        env:
-          LACZEK_SOURCE: \${{ github.workspace }}/build-src
-        run: python3 config/scripts/rebrand_laczek.py
-
-      - name: Reuse checkout Git credentials for dependencies
-        run: git -C config config --get-all http.https://github.com/.extraheader | while IFS= read -r h; do git config --global --add http.https://github.com/.extraheader "$h"; done
-      - name: Fetch dependencies
-        working-directory: build-src
-        run: flutter pub get
-
-      - name: Generate temporary release keystore
-        working-directory: build-src
+      - name: Install APK tools
         run: |
-          keytool -genkeypair -v -keystore laczek-release.jks -storepass laczek-build-only -keypass laczek-build-only -alias laczek -keyalg RSA -keysize 2048 -validity 36500 -dname "CN=LACZEK, OU=LACZEK Player, O=LACZEK, C=UG"
+          sudo apt-get update
+          sudo apt-get install -y apktool imagemagick
 
-      - name: Configure release signing
-        working-directory: build-src
+      - name: Download latest upstream Android builds
         run: |
-          cat > android/key.properties <<'EOF'
-          storePassword=laczek-build-only
-          keyPassword=laczek-build-only
-          keyAlias=laczek
-          storeFile=../laczek-release.jks
-          EOF
+          set -e
+          mkdir -p upstream
+          curl -fL --retry 5 --retry-all-errors -o upstream/arm64.apk "https://github.com/namidaco/namida-snapshots/releases/download/7.4.0-beta%2B260925002/namida-v7.4.0-beta-arm64-v8a.apk"
+          curl -fL --retry 5 --retry-all-errors -o upstream/armv7.apk "https://github.com/namidaco/namida-snapshots/releases/download/7.4.0-beta%2B260925002/namida-v7.4.0-beta-armeabi-v7a.apk"
+          test -s upstream/arm64.apk
+          test -s upstream/armv7.apk
 
-      - name: Build universal release APK
-        working-directory: build-src
-        run: flutter build apk --release
-
-      - name: Verify APK
-        working-directory: build-src
+      - name: Decode and create universal APK
         run: |
-          test -f build/app/outputs/flutter-apk/LACZEKPlayer-1.0.0.apk
-          apksigner verify --verbose build/app/outputs/flutter-apk/LACZEKPlayer-1.0.0.apk
+          set -e
+          apktool d -f upstream/arm64.apk -o work/arm64
+          apktool d -f upstream/armv7.apk -o work/armv7
+
+          mkdir -p work/arm64/lib/armeabi-v7a
+          cp -a work/armv7/lib/armeabi-v7a/. work/arm64/lib/armeabi-v7a/
+
+          find work/arm64 -type f \( -name '*.so' -o -name 'libapp.so' \) -print0 | while IFS= read -r -d '' f; do
+            perl -pi -e 's/Namida/LaCzek/g; s/namida/laczek/g' "$f" || true
+          done
+
+          if [ -f work/arm64/AndroidManifest.xml ]; then
+            sed -i 's/package="com\.msob7y\.namida"/package="com.v3x.laczekplayer"/g' work/arm64/AndroidManifest.xml
+            sed -i 's/android:label="@string\/app_name"/android:label="LACZEK Player"/g' work/arm64/AndroidManifest.xml
+            sed -i 's/android:label="Namida"/android:label="LACZEK Player"/g' work/arm64/AndroidManifest.xml
+            sed -i 's/android:versionName="[^"]*"/android:versionName="1.0.0"/g' work/arm64/AndroidManifest.xml
+            sed -i 's/android:versionCode="[^"]*"/android:versionCode="1"/g' work/arm64/AndroidManifest.xml
+          fi
+
+          find work/arm64/res -type f -name '*.xml' -print0 | while IFS= read -r -d '' f; do
+            sed -i 's/>Namida</>LACZEK Player</g; s/>namida</>laczek</g' "$f" || true
+          done
+
+          mkdir -p work/arm64/res/drawable
+          convert -size 512x512 xc:'#111111' -gravity center -fill '#ff8a3d' -font DejaVu-Sans-Bold -pointsize 180 -annotate +0+0 'L' work/arm64/res/drawable/laczek_icon.png
+          sed -i 's#android:icon="@[^"]*"#android:icon="@drawable/laczek_icon"#g; s#android:roundIcon="@[^"]*"#android:roundIcon="@drawable/laczek_icon"#g' work/arm64/AndroidManifest.xml
+
+          mkdir -p release
+          apktool b work/arm64 -o release/unsigned.apk
+
+      - name: Sign universal release APK
+        run: |
+          set -e
+          BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          keytool -genkeypair -v             -keystore release-key.jks             -storepass laczekplayer             -keypass laczekplayer             -alias laczek             -keyalg RSA -keysize 2048 -validity 36500             -dname "CN=LaCzek, OU=LACZEK Player, O=LACZEK, C=UG"
+          "$BUILD_TOOLS/zipalign" -f -p 4 release/unsigned.apk release/aligned.apk
+          "$BUILD_TOOLS/apksigner" sign             --ks release-key.jks             --ks-pass pass:laczekplayer             --key-pass pass:laczekplayer             --ks-key-alias laczek             --out release/LACZEKPlayer-1.0.0.apk             release/aligned.apk
+          "$BUILD_TOOLS/apksigner" verify --verbose release/LACZEKPlayer-1.0.0.apk
+          test -s release/LACZEKPlayer-1.0.0.apk
 
       - name: Upload Actions artifact
         uses: actions/upload-artifact@v4
         with:
           name: LACZEKPlayer-1.0.0
-          path: build-src/build/app/outputs/flutter-apk/LACZEKPlayer-1.0.0.apk
+          path: release/LACZEKPlayer-1.0.0.apk
           if-no-files-found: error
 
       - name: Create GitHub Release
@@ -77,4 +89,4 @@ jobs:
           tag_name: v1.0.0
           name: LACZEK Player v1.0.0
           generate_release_notes: true
-          files: build-src/build/app/outputs/flutter-apk/LACZEKPlayer-1.0.0.apk
+          files: release/LACZEKPlayer-1.0.0.apk
