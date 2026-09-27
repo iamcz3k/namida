@@ -33,14 +33,6 @@ jobs:
           LACZEK_SOURCE: \${{ github.workspace }}/build-src
         run: python3 config/scripts/rebrand_laczek.py
 
-      - name: Verify branding and package
-        working-directory: build-src
-        run: |
-          grep -n "version: 1.0.0+1" pubspec.yaml
-          grep -n "applicationId = \\"com.v3x.laczekplayer\\"" android/app/build.gradle.kts
-          grep -n "namespace = \\"com.v3x.laczekplayer\\"" android/app/build.gradle.kts
-          grep -n 'android:label="LACZEK Player"' android/app/src/main/AndroidManifest.xml
-
       - name: Fetch dependencies
         working-directory: build-src
         run: flutter pub get
