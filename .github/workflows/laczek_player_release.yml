@@ -37,8 +37,8 @@ jobs:
       - name: Decode and create universal APK
         run: |
           set -e
-          apktool d -f upstream/arm64.apk -o work/arm64
-          apktool d -f upstream/armv7.apk -o work/armv7
+          apktool d -f -r -s upstream/arm64.apk -o work/arm64
+          apktool d -f -r -s upstream/armv7.apk -o work/armv7
 
           mkdir -p work/arm64/lib/armeabi-v7a
           cp -a work/armv7/lib/armeabi-v7a/. work/arm64/lib/armeabi-v7a/
